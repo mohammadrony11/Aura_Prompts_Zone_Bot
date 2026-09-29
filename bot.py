@@ -1,11 +1,12 @@
 import os
 import time
 import requests
+from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-keyboard = {
+KEYBOARD = {
     "inline_keyboard": [
         [
             {"text": "📢 টেলিগ্রাম চ্যানেল", "url": "https://t.me/ronyeditzone"},
@@ -26,33 +27,42 @@ def send_message(chat_id):
 
     data = {
         "chat_id": chat_id,
-        "text": "👋 আমাদের Bot-এ স্বাগতম!\n\nনিচের বাটন থেকে আপনার প্রয়োজনীয় লিংকে যান।",
-        "reply_markup": keyboard
+        "text": "👋 আমাদের Bot-এ স্বাগতম!\n\nনিচের বাটনে ক্লিক করুন 👇",
+        "reply_markup": KEYBOARD
     }
 
-    requests.post(url, json=data)
+    response = requests.post(url, json=data)
+    print(response.text)
 
-def bot_loop():
+def telegram_bot():
     offset = 0
 
     while True:
-        url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
-        params = {"offset": offset, "timeout": 30}
+        try:
+            url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
+            params = {
+                "offset": offset,
+                "timeout": 30
+            }
 
-        response = requests.get(url, params=params)
-        data = response.json()
+            response = requests.get(url, params=params, timeout=40)
+            result = response.json()
 
-        for update in data.get("result", []):
-            offset = update["update_id"] + 1
+            for update in result.get("result", []):
+                offset = update["update_id"] + 1
 
-            message = update.get("message", {})
-            chat = message.get("chat", {})
-            text = message.get("text", "")
+                message = update.get("message")
 
-            if text == "/start":
-                send_message(chat["id"])
+                if message:
+                    text = message.get("text", "")
+                    chat_id = message["chat"]["id"]
 
-        time.sleep(1)
+                    if text == "/start":
+                        send_message(chat_id)
+
+        except Exception as e:
+            print("Error:", e)
+            time.sleep(5)
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -63,10 +73,10 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
-import threading
+def start_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), Handler)
+    server.serve_forever()
 
-threading.Thread(target=bot_loop, daemon=True).start()
-
-port = int(os.environ.get("PORT", 10000))
-server = HTTPServer(("0.0.0.0", port), Handler)
-server.serve_forever()
+Thread(target=telegram_bot, daemon=True).start()
+start_server()
