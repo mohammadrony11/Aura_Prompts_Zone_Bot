@@ -4,6 +4,7 @@ import requests
 
 TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = "@ronyeditzone"
+WHATSAPP = os.getenv("WHATSAPP")
 
 def send_post():
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
@@ -12,8 +13,28 @@ def send_post():
         "inline_keyboard": [
             [
                 {
-                    "text": "🔗 আমাদের চ্যানেল",
+                    "text": "📢 টেলিগ্রাম চ্যানেল",
                     "url": "https://t.me/ronyeditzone"
+                },
+                {
+                    "text": "👤 এডমিন",
+                    "url": "https://t.me/mohammadrony110"
+                }
+            ],
+            [
+                {
+                    "text": "👥 ফেসবুক গ্রুপ",
+                    "url": "https://www.facebook.com/share/g/17ZhEcD8S8/"
+                },
+                {
+                    "text": "📘 ফেসবুক পেজ",
+                    "url": "https://www.facebook.com/share/1MMVGtYkhn/"
+                }
+            ],
+            [
+                {
+                    "text": "💬 WhatsApp",
+                    "url": WHATSAPP
                 }
             ]
         ]
