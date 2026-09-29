@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 
 TOKEN = os.getenv("BOT_TOKEN")
@@ -24,6 +25,10 @@ def send_post():
         "reply_markup": keyboard
     }
 
-    requests.post(url, json=data)
+    response = requests.post(url, json=data)
+    print(response.text)
 
 send_post()
+
+while True:
+    time.sleep(60)
